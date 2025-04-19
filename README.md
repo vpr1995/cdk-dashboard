@@ -1,18 +1,19 @@
-# cdk-dashboard
+# CDK Dashboard
 
-A CDK construct library that creates CloudWatch dashboards for AWS CDK stacks. It automatically discovers resources in your stack and creates dashboard widgets grouped by service type.
+A CDK construct library that automatically creates CloudWatch dashboards for AWS CDK stacks. It scans your stack for supported resources and generates organized, service-grouped dashboard widgets to monitor your infrastructure.
 
 ## Features
 
-- **Automatic Resource Discovery**: Uses CDK Aspects to automatically find and monitor resources in your stack
-- **Service Grouping**: Groups metrics by AWS service type for better organization
+- **Zero-Config Resource Discovery**: Uses CDK Aspects to automatically find and monitor resources in your stack
+- **Pre-configured Metric Widgets**: Creates optimized CloudWatch widgets with the most useful metrics for each service
+- **Consistent Dashboards**: Standardizes dashboard layout and metrics across all your stacks
+- **Custom Widget Support**: Allows adding your own custom CloudWatch widgets alongside auto-discovered resources
 - **Supported AWS Services**:
-  - Lambda Functions
-  - API Gateway
-  - DynamoDB Tables
-  - SNS Topics
-  - SQS Queues
-- **Simple Integration**: Easy to add to any CDK stack with minimal configuration
+  - Lambda Functions (invocations, errors, duration, throttles)
+  - API Gateway (request count, latency, error rates)
+  - DynamoDB Tables (read/write capacity, throttling, query/scan performance)
+  - SNS Topics (published messages, delivery success/failure)
+  - SQS Queues (sent/received messages, queue depth, message age)
 
 ## Installation
 
@@ -25,7 +26,7 @@ npm install cdk-dashboard
 ### Basic Usage
 
 ```typescript
-import { Stack, App } from 'aws-cdk-lib';
+import { Stack, App, Duration } from 'aws-cdk-lib';
 import { CdkDashboard } from 'cdk-dashboard';
 
 class MyStack extends Stack {
@@ -37,8 +38,8 @@ class MyStack extends Stack {
 
     // Create a dashboard for this stack
     new CdkDashboard(this, 'Dashboard', {
-      dashboardName: 'my-stack-dashboard',
-      stack: this,
+      dashboardName: 'my-service-dashboard',
+      timeframe: Duration.hours(3)
     });
   }
 }
@@ -46,47 +47,158 @@ class MyStack extends Stack {
 
 ### Customizing the Dashboard
 
-You can customize which services are included in the dashboard:
+You can customize the dashboard name and timeframe:
 
 ```typescript
 new CdkDashboard(this, 'CustomDashboard', {
-  dashboardName: 'custom-dashboard',
-  stack: this,
-  periodHours: 6,                // Show 6 hours of data in widgets
-  includeLambda: true,           // Include Lambda metrics
-  includeApiGateway: true,       // Include API Gateway metrics
-  includeDynamoDB: true,         // Include DynamoDB metrics
-  includeSNS: false,             // Exclude SNS metrics
-  includeSQS: false,             // Exclude SQS metrics
+  dashboardName: 'production-monitoring',
+  timeframe: Duration.days(1)  // Show 1 day of data in all widgets
 });
 ```
 
-### Adding to Multiple Stacks
+### Adding Custom Widgets
 
-You can create a single dashboard that monitors multiple stacks:
+You can add your own custom CloudWatch widgets alongside the automatically discovered resource widgets:
 
 ```typescript
-// Create the dashboard in the main stack
-const dashboard = new CdkDashboard(mainStack, 'Dashboard', {
-  dashboardName: 'multi-stack-dashboard',
+import { GraphWidget, TextWidget, Metric } from 'aws-cdk-lib/aws-cloudwatch';
+
+// Create a dashboard
+const dashboard = new CdkDashboard(this, 'CustomDashboard', {
+  dashboardName: 'production-monitoring',
+  timeframe: Duration.days(1)
 });
 
-// Add additional stacks to the dashboard
-dashboard.addToStack(stackA);
-dashboard.addToStack(stackB);
+// Add a text header
+dashboard.addWidgets(
+  new TextWidget({
+    markdown: '# Custom Metrics',
+    width: 24,
+    height: 1
+  })
+);
+
+// Add a custom metric graph
+dashboard.addWidgets(
+  new GraphWidget({
+    title: 'Custom Application Metrics',
+    left: [
+      new Metric({
+        namespace: 'CustomNamespace',
+        metricName: 'SuccessRate',
+        dimensionsMap: { Service: 'MyService' },
+        statistic: 'Average'
+      })
+    ],
+    width: 12,
+    height: 6
+  })
+);
 ```
 
 ## How It Works
 
-The `cdk-dashboard` library uses CDK's Aspects feature to traverse the construct tree of your stack and identify resources by type. It then collects metrics for each resource and groups them by service, creating dashboard widgets for each group.
+The `cdk-dashboard` library uses CDK's Aspects feature to traverse the construct tree of your stack. It identifies resources by type and collects them into service groups. Then it generates optimized metrics and widgets for each service type.
 
-The dashboard shows common metrics for each service. For example:
+### Service Metrics
 
-- **Lambda**: Invocations, Duration, Errors, Throttles, Concurrent Executions
-- **API Gateway**: Request Count, Latency, Errors (4XX, 5XX)
-- **DynamoDB**: Read/Write Capacity, Throttle Events, Query/Scan Latency
-- **SNS**: Published Messages, Delivered Notifications, Failed Notifications
-- **SQS**: Messages Sent/Received, Visible Messages, Age of Oldest Message
+The library creates these metrics for each service:
+
+#### Lambda Functions
+- Invocations
+- Duration (ms)
+- Errors
+- Throttles
+
+#### API Gateway
+- Request Count
+- Latency (ms)
+- 4XX Errors
+- 5XX Errors
+
+#### DynamoDB
+- Read/Write Capacity Units
+- Throttle Events
+- Query Latency
+- Scan Latency
+
+#### SNS Topics
+- Messages Published
+- Notifications Delivered
+- Notifications Failed
+
+#### SQS Queues
+- Messages Sent
+- Messages Received
+- Visible Messages
+- Age of Oldest Message
+
+## Example
+
+Here's a complete example that creates a stack with some AWS resources and adds a dashboard:
+
+```typescript
+import { App, Stack, StackProps, Duration } from 'aws-cdk-lib';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { CdkDashboard } from 'cdk-dashboard';
+
+class ExampleStack extends Stack {
+  constructor(scope: App, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    // Create a Lambda function
+    const processor = new NodejsFunction(this, 'Processor', {
+      entry: 'src/handler.js',
+      handler: 'handler'
+    });
+
+    // Create a DynamoDB table
+    const table = new Table(this, 'Items', {
+      partitionKey: { name: 'id', type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST
+    });
+
+    // Create an SQS queue
+    const queue = new Queue(this, 'ItemsQueue');
+
+    // Create an SNS topic
+    const topic = new Topic(this, 'ItemsTopic');
+
+    // Create a dashboard for this stack
+    new CdkDashboard(this, 'Dashboard', {
+      dashboardName: 'example-dashboard',
+      timeframe: Duration.hours(6)
+    });
+  }
+}
+
+const app = new App();
+new ExampleStack(app, 'ExampleStack');
+app.synth();
+```
+
+## Advanced Usage
+
+The `CdkDashboard` construct is highly reusable. You can create specialized dashboards for different parts of your infrastructure by controlling the scope:
+
+```typescript
+// Create a dashboard for a specific construct and its children
+new CdkDashboard(apiConstruct, 'ApiDashboard', {
+  dashboardName: 'api-metrics'
+});
+
+// Create a dashboard for a specific database and its resources
+new CdkDashboard(databaseConstruct, 'DatabaseDashboard', {
+  dashboardName: 'db-metrics'
+});
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
