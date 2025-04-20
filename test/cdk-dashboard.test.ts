@@ -1,11 +1,10 @@
-import { App, Stack, Duration } from 'aws-cdk-lib';
+import { App, Stack } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda';
-import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { GraphWidget, TextWidget } from 'aws-cdk-lib/aws-cloudwatch';
+import { TextWidget } from 'aws-cdk-lib/aws-cloudwatch';
 
 import { CdkDashboard } from '../src';
 
@@ -40,15 +39,14 @@ describe('CdkDashboard', () => {
     });
   });
   
-  test('Dashboard is created with custom name and timeframe', () => {
+  test('Dashboard is created with custom name', () => {
     // GIVEN
     const app = new App();
     const stack = new Stack(app, 'TestStack');
     
     // WHEN
     new CdkDashboard(stack, 'CustomDashboard', {
-      dashboardName: 'custom-dashboard-name',
-      timeframe: Duration.days(1)
+      dashboardName: 'custom-dashboard-name'
     });
     
     // THEN

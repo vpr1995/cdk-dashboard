@@ -85,18 +85,22 @@ export class ApiGatewayMetricProvider implements ServiceMetricProvider<IRestApi>
       this.metricFactory.createGraphWidget({
         title: 'API Gateway - Request Count',
         metrics: requestCountMetrics,
+        width: 6,
       }),
       this.metricFactory.createGraphWidget({
         title: 'API Gateway - Latency (ms)',
         metrics: latencyMetrics,
+        width: 6,
       }),
       this.metricFactory.createGraphWidget({
         title: 'API Gateway - 4XX Errors',
         metrics: error4xxMetrics,
+        width: 6,
       }),
       this.metricFactory.createGraphWidget({
         title: 'API Gateway - 5XX Errors',
         metrics: error5xxMetrics,
+        width: 6,
       }),
     ];
   }

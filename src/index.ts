@@ -19,12 +19,6 @@ export interface DashboardProps {
    * @default 'CdkDashboard'
    */
   dashboardName?: string;
-  
-  /**
-   * The time period to display in the dashboard.
-   * @default Duration.hours(3)
-   */
-  timeframe?: Duration;
 }
 
 /**
@@ -44,8 +38,7 @@ export interface DashboardProps {
  * ```ts
  * // Create a dashboard for all resources in the stack
  * new CdkDashboard(this, 'ServiceDashboard', {
- *   dashboardName: 'MyServiceDashboard',
- *   timeframe: Duration.days(1)
+ *   dashboardName: 'MyServiceDashboard'
  * });
  * 
  * // Add custom widgets to the dashboard
@@ -87,7 +80,7 @@ export class CdkDashboard extends Construct implements IAspect {
   ) {
     super(scope, id);
 
-    const { dashboardName, timeframe } = props;
+    const { dashboardName } = props;
 
     // Register this aspect to scan the provided scope
     Aspects.of(scope).add(this);
@@ -98,7 +91,7 @@ export class CdkDashboard extends Construct implements IAspect {
     });
 
     // Initialize the metric factory and service metrics
-    this.metricFactory = new MetricFactory(timeframe || Duration.hours(3));
+    this.metricFactory = new MetricFactory(Duration.hours(3));
     this.serviceMetrics = new ServiceMetrics(this.metricFactory);
   }
 

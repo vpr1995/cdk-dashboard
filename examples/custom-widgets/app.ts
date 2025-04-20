@@ -5,7 +5,7 @@ import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
-import { GraphWidget, TextWidget, Metric, Dashboard, LogQueryWidget } from 'aws-cdk-lib/aws-cloudwatch';
+import { GraphWidget, TextWidget, Metric, LogQueryWidget } from 'aws-cdk-lib/aws-cloudwatch';
 import { CdkDashboard } from '../../src/index';
 
 class CustomWidgetsStack extends Stack {
@@ -57,7 +57,6 @@ class CustomWidgetsStack extends Stack {
     // Create the dashboard with custom widgets
     const dashboard = new CdkDashboard(this, 'CustomWidgetsDashboard', {
       dashboardName: 'DashboardWithCustomWidgets',
-      timeframe: Duration.hours(3),
     });
 
     // Add a text header as a section divider

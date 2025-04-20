@@ -101,18 +101,22 @@ export class LambdaMetricProvider implements ServiceMetricProvider<IFunction> {
       this.metricFactory.createGraphWidget({
         title: 'Lambda - Invocations',
         metrics: invocationMetrics,
+        width: 6,
       }),
       this.metricFactory.createGraphWidget({
         title: 'Lambda - Duration (ms)',
         metrics: durationMetrics,
+        width: 6,
       }),
       this.metricFactory.createGraphWidget({
         title: 'Lambda - Errors',
         metrics: errorMetrics,
+        width: 6,
       }),
       this.metricFactory.createGraphWidget({
         title: 'Lambda - Throttles',
         metrics: throttleMetrics,
+        width: 6,
       }),
     ];
   }

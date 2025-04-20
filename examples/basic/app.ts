@@ -71,7 +71,6 @@ class ExampleStack extends Stack {
     // Create the dashboard for this stack
     new CdkDashboard(this, 'ResourceDashboard', {
       dashboardName: 'ExampleCdkDashboard',
-      timeframe: Duration.hours(1),
     });
   }
 }

@@ -26,7 +26,7 @@ npm install cdk-dashboard
 ### Basic Usage
 
 ```typescript
-import { Stack, App, Duration } from 'aws-cdk-lib';
+import { Stack, App } from 'aws-cdk-lib';
 import { CdkDashboard } from 'cdk-dashboard';
 
 class MyStack extends Stack {
@@ -38,8 +38,7 @@ class MyStack extends Stack {
 
     // Create a dashboard for this stack
     new CdkDashboard(this, 'Dashboard', {
-      dashboardName: 'my-service-dashboard',
-      timeframe: Duration.hours(3)
+      dashboardName: 'my-service-dashboard'
     });
   }
 }
@@ -47,12 +46,11 @@ class MyStack extends Stack {
 
 ### Customizing the Dashboard
 
-You can customize the dashboard name and timeframe:
+You can customize the dashboard name:
 
 ```typescript
 new CdkDashboard(this, 'CustomDashboard', {
-  dashboardName: 'production-monitoring',
-  timeframe: Duration.days(1)  // Show 1 day of data in all widgets
+  dashboardName: 'production-monitoring'
 });
 ```
 
@@ -65,8 +63,7 @@ import { GraphWidget, TextWidget, Metric } from 'aws-cdk-lib/aws-cloudwatch';
 
 // Create a dashboard
 const dashboard = new CdkDashboard(this, 'CustomDashboard', {
-  dashboardName: 'production-monitoring',
-  timeframe: Duration.days(1)
+  dashboardName: 'production-monitoring'
 });
 
 // Add a text header
@@ -169,8 +166,7 @@ class ExampleStack extends Stack {
 
     // Create a dashboard for this stack
     new CdkDashboard(this, 'Dashboard', {
-      dashboardName: 'example-dashboard',
-      timeframe: Duration.hours(6)
+      dashboardName: 'example-dashboard'
     });
   }
 }
