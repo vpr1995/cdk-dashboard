@@ -115,6 +115,8 @@ export class CdkDashboard extends Construct implements IAspect {
       this.snsTopics.push(node);
     } else if (isApiGateway(node)) {
       this.apiGateways.push(node);
+    }else {
+      return;
     }
 
     // Reset and rebuild the dashboard with all collected resources
